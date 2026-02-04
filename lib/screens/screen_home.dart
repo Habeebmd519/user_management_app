@@ -1,34 +1,285 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:user_management_app/core/animated_nav_button/AnimatedNavButton.dart';
+import 'package:user_management_app/features/blocs/buttonBloc/button_bloc.dart';
+import 'package:user_management_app/features/blocs/buttonBloc/button_event.dart';
+import 'package:user_management_app/features/blocs/buttonBloc/button_state.dart';
+import 'package:user_management_app/features/blocs/checkBoxBoc/check_bloc.dart';
+import 'package:user_management_app/features/blocs/checkBoxBoc/check_event.dart';
+import 'package:user_management_app/features/blocs/checkBoxBoc/check_state.dart';
 
-class ScreenHome extends StatelessWidget {
-  const ScreenHome({super.key});
+class AnimatedLoginScreen extends StatelessWidget {
+  const AnimatedLoginScreen({super.key});
 
+  // int selectedButton = 1; // 0 = info, 1 = login, 2 = signup
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ListView(
-        children: [
-          Column(
-            children: [
-              const Text(
-                'Hey,',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-              ),
-              const Text(
-                'Nice to see you',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
+    return BlocBuilder<ButtonBloc, ButtonState>(
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: double.infinity,
+                    child: Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 40),
 
-          Column(
-            key: const ValueKey("signup"),
-            children: [
-              _buildField("Full Name", Icons.person),
-              _buildField("Mobile Number", Icons.phone),
-              _buildField("Email", Icons.email),
-              _buildField("Password", Icons.lock, isPassword: true),
-            ],
+                            if (state.selectedButton.index == 2)
+                              Column(
+                                children: [
+                                  const Text(
+                                    'Hey,',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const Text(
+                                    'Nice to see you',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                            if (state.selectedButton.index == 1)
+                              const Text(
+                                "Welcome Back",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            const SizedBox(height: 6),
+                            if (state.selectedButton.index == 2)
+                              const Text(
+                                "Please provide following details to create your account",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            if (state.selectedButton.index == 1)
+                              const Text(
+                                "login with your credentials access your account!",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.grey),
+                              ),
+
+                            const SizedBox(height: 30),
+
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeInOutCubic,
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 450),
+                                transitionBuilder: (child, animation) {
+                                  final isSignup =
+                                      (child.key == const ValueKey("signup"));
+
+                                  final offsetAnimation =
+                                      Tween<Offset>(
+                                        begin: isSignup
+                                            ? const Offset(
+                                                0,
+                                                0.25,
+                                              ) // coming from below (signup)
+                                            : const Offset(
+                                                0,
+                                                -0.25,
+                                              ), // coming from above (login)
+                                        end: Offset.zero,
+                                      ).animate(
+                                        CurvedAnimation(
+                                          parent: animation,
+                                          curve: Curves.easeOutCubic,
+                                        ),
+                                      );
+
+                                  return ClipRect(
+                                    child: FadeTransition(
+                                      opacity: animation,
+                                      child: SlideTransition(
+                                        position: offsetAnimation,
+                                        child: child,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: state.selectedButton.index == 2
+                                    ? Column(
+                                        key: const ValueKey("signup"),
+                                        children: [
+                                          _buildField(
+                                            "Full Name",
+                                            Icons.person,
+                                          ),
+                                          _buildField(
+                                            "Mobile Number",
+                                            Icons.phone,
+                                          ),
+                                          _buildField("Email", Icons.email),
+                                          _buildField(
+                                            "Password",
+                                            Icons.lock,
+                                            isPassword: true,
+                                          ),
+                                        ],
+                                      )
+                                    : Column(
+                                        key: const ValueKey("login"),
+                                        children: [
+                                          if (state.selectedButton.index ==
+                                              1) ...{
+                                            _buildField("Email", Icons.email),
+                                            _buildField(
+                                              "Password",
+                                              Icons.lock,
+                                              isPassword: true,
+                                            ),
+                                          },
+                                          if (state.selectedButton.index ==
+                                              0) ...{
+                                            const Text(
+                                              "Login Help",
+                                              style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 20),
+                                            _buildInfoRow(
+                                              Icons.phone_android,
+                                              "Enter your 10-digit mobile number.",
+                                            ),
+                                            _buildInfoRow(
+                                              Icons.message,
+                                              "Tap 'Get OTP' to receive a code.",
+                                            ),
+                                            _buildInfoRow(
+                                              Icons.security,
+                                              "Do not share your OTP with anyone.",
+                                            ),
+                                            _buildInfoRow(
+                                              Icons.refresh,
+                                              "Having issues? Try restarting the app.",
+                                            ),
+                                          },
+                                        ],
+                                      ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+                            if (state.selectedButton.index == 1 ||
+                                state.selectedButton.index == 2)
+                              /// CHECKBOX
+                              BlocBuilder<TermsBloc, TermsState>(
+                                builder: (context, state) {
+                                  return Row(
+                                    children: [
+                                      Checkbox(
+                                        value: state.accepted,
+                                        onChanged: (v) {
+                                          context.read<TermsBloc>().add(
+                                            TermsToggled(),
+                                          );
+                                        },
+                                      ),
+                                      const Expanded(
+                                        child: Text(
+                                          "I accepted the terms and conditions",
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                /// BOTTOM BUTTON BAR
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: BlocBuilder<ButtonBloc, ButtonState>(
+                    builder: (context, state) {
+                      return Row(
+                        children: [
+                          PremiumAnimatedButton(
+                            index: 0,
+                            selectedIndex: state.selectedButton.index,
+                            icon: Icons.info_outline,
+                            label: "Info",
+                            onTap: () => context.read<ButtonBloc>().add(
+                              AuthButtonPressed(AuthButton.info),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: SizedBox(
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 10),
+                                child: Divider(),
+                              ),
+                            ),
+                          ),
+                          PremiumAnimatedButton(
+                            index: 1,
+                            selectedIndex: state.selectedButton.index,
+                            icon: Icons.login,
+                            label: "Login",
+                            onTap: () {
+                              context.read<ButtonBloc>().add(
+                                AuthButtonPressed(AuthButton.login),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 12),
+                          PremiumAnimatedButton(
+                            index: 2,
+                            selectedIndex: state.selectedButton.index,
+                            icon: Icons.person_add,
+                            label: "Sign Up",
+                            onTap: () {
+                              context.read<ButtonBloc>().add(
+                                AuthButtonPressed(AuthButton.signup),
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.deepPurple, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(text, style: TextStyle(color: Colors.grey.shade700)),
           ),
         ],
       ),
