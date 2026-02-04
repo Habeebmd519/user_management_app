@@ -9,9 +9,13 @@ import 'package:user_management_app/features/blocs/checkBoxBoc/check_event.dart'
 import 'package:user_management_app/features/blocs/checkBoxBoc/check_state.dart';
 
 class AnimatedLoginScreen extends StatelessWidget {
-  const AnimatedLoginScreen({super.key});
+  AnimatedLoginScreen({super.key});
 
-  // int selectedButton = 1; // 0 = info, 1 = login, 2 = signup
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ButtonBloc, ButtonState>(
@@ -121,16 +125,23 @@ class AnimatedLoginScreen extends StatelessWidget {
                                           _buildField(
                                             "Full Name",
                                             Icons.person,
+                                            controller: nameController,
                                           ),
                                           _buildField(
                                             "Mobile Number",
                                             Icons.phone,
+                                            controller: phoneController,
                                           ),
-                                          _buildField("Email", Icons.email),
+                                          _buildField(
+                                            "Email",
+                                            Icons.email,
+                                            controller: emailController,
+                                          ),
                                           _buildField(
                                             "Password",
                                             Icons.lock,
                                             isPassword: true,
+                                            controller: passwordController,
                                           ),
                                         ],
                                       )
@@ -139,11 +150,16 @@ class AnimatedLoginScreen extends StatelessWidget {
                                         children: [
                                           if (state.selectedButton.index ==
                                               1) ...{
-                                            _buildField("Email", Icons.email),
+                                            _buildField(
+                                              "Email",
+                                              Icons.email,
+                                              controller: emailController,
+                                            ),
                                             _buildField(
                                               "Password",
                                               Icons.lock,
                                               isPassword: true,
+                                              controller: passwordController,
                                             ),
                                           },
                                           if (state.selectedButton.index ==
@@ -218,6 +234,8 @@ class AnimatedLoginScreen extends StatelessWidget {
                       return Row(
                         children: [
                           PremiumAnimatedButton(
+                            emailController: emailController,
+                            passwordController: passwordController,
                             index: 0,
                             selectedIndex: state.selectedButton.index,
                             icon: Icons.info_outline,
@@ -236,6 +254,8 @@ class AnimatedLoginScreen extends StatelessWidget {
                             ),
                           ),
                           PremiumAnimatedButton(
+                            emailController: emailController,
+                            passwordController: passwordController,
                             index: 1,
                             selectedIndex: state.selectedButton.index,
                             icon: Icons.login,
@@ -248,6 +268,8 @@ class AnimatedLoginScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                           PremiumAnimatedButton(
+                            emailController: emailController,
+                            passwordController: passwordController,
                             index: 2,
                             selectedIndex: state.selectedButton.index,
                             icon: Icons.person_add,
@@ -286,8 +308,12 @@ class AnimatedLoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildField(String hint, IconData icon, {bool isPassword = false}) {
-    final controller = TextEditingController();
+  Widget _buildField(
+    String hint,
+    IconData icon, {
+    required TextEditingController controller,
+    bool isPassword = false,
+  }) {
     final focusNode = FocusNode();
     ValueNotifier<bool> obscure = ValueNotifier(isPassword);
 
